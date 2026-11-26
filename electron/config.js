@@ -32,7 +32,7 @@ function httpJson(url, timeout = 9000) {
       res.setEncoding('utf8');
       res.on('data', (c) => { body += c; });
       res.on('end', () => {
-        try { resolve(JSON.parse(body)); } catch (e) { reject(e); }
+        try { resolve(JSON.parse(body.replace(/^\uFEFF/, ''))); } catch (e) { reject(e); }
       });
     });
     req.on('error', reject);

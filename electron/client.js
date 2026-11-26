@@ -76,7 +76,7 @@ function httpJson(url, timeout = 12000) {
       let body = '';
       res.setEncoding('utf8');
       res.on('data', (c) => { body += c; });
-      res.on('end', () => { try { resolve(JSON.parse(body)); } catch (e) { reject(e); } });
+      res.on('end', () => { try { resolve(JSON.parse(body.replace(/^\uFEFF/, ''))); } catch (e) { reject(e); } });
     });
     req.on('error', reject);
     req.setTimeout(timeout, () => req.destroy(new Error('timeout')));

@@ -199,8 +199,8 @@
     badge.className = `badge ${ok ? 'badge--ok' : 'badge--warn'}`;
     badge.textContent = ok ? 'آماده اجرا' : 'نیاز به تنظیم';
     hint.textContent = ok
-      ? 'Multi Theft Auto پیدا شد؛ اتصال با یک کلیک انجام می‌شود.'
-      : 'پوشه نصب MTA را انتخاب کن یا «شناسایی خودکار» را بزن.';
+      ? 'موتور بازی پیدا شد؛ اتصال با یک کلیک انجام می‌شود.'
+      : 'پوشه نصب موتور بازی را انتخاب کن یا «شناسایی خودکار» را بزن.';
   }
 
   async function detectGame(silent = true) {
@@ -213,13 +213,13 @@
       const found = res.installs[0];
       if (found.path !== state.prefs.mtaPath) {
         await savePrefs({ mtaPath: found.path });
-        if (!silent) toast('Multi Theft Auto پیدا شد.', 'ok');
+        if (!silent) toast('موتور بازی پیدا شد.', 'ok');
       }
       updateGameStatus(found.path);
       $('#mtaPathLabel').textContent = found.path;
     } else {
       updateGameStatus(state.prefs.mtaPath);
-      if (!silent) toast('نسخه‌ای از MTA پیدا نشد. پوشه را دستی انتخاب کن.', 'bad');
+      if (!silent) toast('موتور بازی پیدا نشد. پوشه را دستی انتخاب کن.', 'bad');
     }
   }
 
@@ -257,7 +257,7 @@
     } else {
       badge.className = 'badge badge--warn';
       badge.textContent = 'نصب نیست';
-      hint.textContent = 'کلاینت دانلود نشده؛ تا آن موقع اگر MTA داشته باشی از همان استفاده می‌شود.';
+      hint.textContent = 'کلاینت دانلود نشده؛ تا آن موقع اگر موتور بازی روی سیستم باشد از همان استفاده می‌شود.';
       if (btn) btn.textContent = 'دانلود و نصب کلاینت';
     }
   }
@@ -640,7 +640,7 @@
   // launch flow
   // ---------------------------------------------------------------------
   const LAUNCH_STEPS = [
-    'بررسی مسیر نصب Multi Theft Auto',
+    'بررسی مسیر نصب موتور بازی',
     'آماده‌سازی پروفایل بازیکن',
     'ارسال درخواست اتصال به سرور',
     'اجرای کلاینت بازی',
@@ -694,7 +694,7 @@
       await detectGame(true);
       if (!state.prefs.mtaPath) {
         launchOverlay(false);
-        toast('اول کلاینت XMP را دانلود کن یا مسیر MTA را در تنظیمات مشخص کن.', 'bad');
+        toast('اول کلاینت XMP را دانلود کن یا مسیر موتور بازی را در تنظیمات مشخص کن.', 'bad');
         openPage('settings');
         $$('#snav button').find((b) => b.dataset.panel === 'game')?.click();
         return;
