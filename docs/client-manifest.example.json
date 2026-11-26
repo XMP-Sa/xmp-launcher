@@ -1,0 +1,7 @@
+{
+  "_comment": "Published as xmp-client-manifest.json next to the client zip on every xmp-blue release (xmp-v* tag). The launcher compares version, downloads url, verifies sha256, then extracts. See electron/client.js.",
+  "version": "1.7.0-xmp.1",
+  "url": "https://github.com/xmp-studio/xmp-blue/releases/download/xmp-v1.7.0-xmp.1/XMP-Client-win32.zip",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "size": 0
+}

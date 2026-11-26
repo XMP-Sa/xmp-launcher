@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'none';" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XMP Launcher</title>
+  <link rel="stylesheet" href="styles/app.css" />
+</head>
+<body dir="rtl">
+<!-- ======================= boot ======================= -->
+<div id="boot">
+  <div class="boot__inner">
+    <div class="boot__mark"><img src="assets/logo-256.png" alt="XMP" /></div>
+    <div class="boot__word">XMP</div>
+    <div class="boot__bar"><i id="bootBar"></i></div>
+    <div class="boot__hint" id="bootHint">در حال آماده‌سازی لانچر…</div>
+  </div>
+</div>
+
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<!-- ======================= shell ======================= -->
+<div id="shell">
+
+  <!-- rail -->
+  <aside class="rail">
+    <div class="rail__logo"><img src="assets/logo-256.png" alt="XMP" /></div>
+    <nav class="nav" id="nav">
+      <button class="nav__btn is-active" data-page="home" aria-label="خانه">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 10.5 12 3.5l8.5 7" /><path d="M5.5 9.5V20h13V9.5" /><path d="M9.5 20v-5.5h5V20" />
+        </svg>
+        <span class="tip">خانه</span>
+      </button>
+      <button class="nav__btn" data-page="servers" aria-label="سرورها">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="4" width="17" height="6" rx="2" /><rect x="3.5" y="14" width="17" height="6" rx="2" />
+          <path d="M7 7h.01M7 17h.01" />
+        </svg>
+        <span class="tip">سرورها</span>
+      </button>
+      <button class="nav__btn" data-page="favorites" aria-label="علاقه‌مندی‌ها">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m12 3.8 2.6 5.3 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.9l5.9-.8Z" />
+        </svg>
+        <span class="tip">علاقه‌مندی‌ها</span>
+      </button>
+      <button class="nav__btn" data-page="settings" aria-label="تنظیمات">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3.2" />
+          <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+        </svg>
+        <span class="tip">تنظیمات</span>
+      </button>
+    </nav>
+    <div class="rail__spacer"></div>
+    <div class="rail__foot">
+      <button class="rail__avatar" id="navAvatar" aria-label="پروفایل">X</button>
+    </div>
+  </aside>
+
+  <!-- topbar -->
+  <header class="topbar">
+    <div class="wctl">
+      <button id="wMin" aria-label="کوچک">
+        <svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 6h8" /></svg>
+      </button>
+      <button id="wMax" aria-label="بزرگ">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2.2" y="2.2" width="7.6" height="7.6" rx="1.4" /></svg>
+      </button>
+      <button id="wClose" class="danger" aria-label="بستن">
+        <svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="m3 3 6 6M9 3l-6 6" /></svg>
+      </button>
+    </div>
+    <div class="topbar__title">
+      <h2 id="pageTitle">خانه</h2>
+      <span id="pageEyebrow">XMP</span>
+    </div>
+    <div class="topbar__spacer"></div>
+    <label class="searchbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" />
+      </svg>
+      <input id="globalSearch" type="search" placeholder="جستجوی سرور، آی‌پی یا نام…" spellcheck="false" />
+      <kbd>Ctrl K</kbd>
+    </label>
+  </header>
+
+  <!-- views -->
+  <main class="view" id="view">
+
+    <!-- ---------------- home ---------------- -->
+    <section class="page is-active" data-page="home">
+      <div class="hero">
+        <div class="hero__body">
+          <div class="eyebrow">XMP · Multi Theft Auto</div>
+          <h1>سن آندرس، <span class="grad">بدون مرز</span>.</h1>
+          <p>یک لانچر سبک و سریع برای MTA:SA — سرورها را ببین، با یک کلیک وصل شو، بدون دردسر.</p>
+          <div class="hero__actions">
+            <button class="btn btn--primary" id="heroPlay">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6L19 12 8 5.2Z" /></svg>
+              <span>ورود به بازی</span>
+            </button>
+            <button class="btn btn--ghost" id="heroBrowse">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="4" width="17" height="6" rx="2" /><rect x="3.5" y="14" width="17" height="6" rx="2" />
+              </svg>
+              <span>مرور سرورها</span>
+            </button>
+          </div>
+        </div>
+        <div class="hero__stats">
+          <div class="stat">
+            <div class="stat__ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+                <rect x="3.5" y="5" width="17" height="5" rx="1.8" /><rect x="3.5" y="14" width="17" height="5" rx="1.8" />
+              </svg>
+            </div>
+            <div>
+              <div class="stat__val num" id="statServers">—</div>
+              <div class="stat__lbl">سرور فعال</div>
+            </div>
+          </div>
+          <div class="stat">
+            <div class="stat__ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="8.5" r="3.2" /><path d="M3.5 19.5c.6-3.1 2.8-4.8 5.5-4.8s4.9 1.7 5.5 4.8" />
+                <path d="M16.5 6.4a3 3 0 0 1 0 5.7M18.5 19.5c-.2-1.7-.7-3-1.6-3.9" />
+              </svg>
+            </div>
+            <div>
+              <div class="stat__val num" id="statPlayers">—</div>
+              <div class="stat__lbl">بازیکن آنلاین</div>
+            </div>
+          </div>
+          <div class="stat">
+            <div class="stat__ico">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8.4" /><path d="M12 7.6V12l3 1.8" />
+              </svg>
+            </div>
+            <div style="min-width:0">
+              <div class="stat__val" id="statLast" style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">—</div>
+              <div class="stat__lbl">آخرین سرور</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>سرورهای پرطرفدار</h3>
+        <div class="rule"></div>
+        <button class="link" data-goto="servers">
+          همه سرورها
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6" /></svg>
+        </button>
+      </div>
+      <div class="cards" id="topCards"></div>
+
+      <div class="section-head">
+        <h3>ادامه بده</h3>
+        <div class="rule"></div>
+        <button class="link" data-goto="favorites">
+          علاقه‌مندی‌ها
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6" /></svg>
+        </button>
+      </div>
+      <div class="table" id="quickTable"></div>
+    </section>
+
+    <!-- ---------------- servers ---------------- -->
+    <section class="page" data-page="servers">
+      <div class="toolbar">
+        <button class="chip is-active" data-filter="all">همه</button>
+        <button class="chip" data-filter="room">جای خالی</button>
+        <button class="chip" data-filter="open">بدون رمز</button>
+        <button class="chip" data-filter="fav">علاقه‌مندی‌ها</button>
+        <div class="toolbar__spacer"></div>
+        <label class="searchbox" style="width:200px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" />
+          </svg>
+          <input id="serverSearch" type="search" placeholder="فیلتر نام یا آی‌پی" spellcheck="false" />
+        </label>
+        <button class="btn btn--ghost btn--sm" id="refreshServers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" />
+          </svg>
+          <span>به‌روزرسانی</span>
+        </button>
+      </div>
+
+      <div class="table" id="serverTable"></div>
+      <div style="display:flex;justify-content:center;margin-top:16px">
+        <button class="btn btn--quiet btn--sm" id="loadMore" hidden>نمایش بیشتر</button>
+      </div>
+    </section>
+
+    <!-- ---------------- favorites ---------------- -->
+    <section class="page" data-page="favorites">
+      <div class="section-head" style="margin-top:0">
+        <h3>سرورهای نشان‌شده</h3>
+        <div class="rule"></div>
+        <span class="badge badge--muted" id="favCount">0</span>
+      </div>
+      <div class="table" id="favTable"></div>
+    </section>
+
+    <!-- ---------------- settings ---------------- -->
+    <section class="page" data-page="settings">
+      <div class="settings">
+        <nav class="snav" id="snav">
+          <button class="is-active" data-panel="general">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4" /><path d="M4.5 20c.7-3.4 3.7-5.2 7.5-5.2s6.8 1.8 7.5 5.2" /></svg>
+            عمومی
+          </button>
+          <button data-panel="game">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11.5h4M8 9.5v4" /><circle cx="15.5" cy="10.5" r="1" /><circle cx="18" cy="13" r="1" /><rect x="2.6" y="7" width="18.8" height="10" rx="4.4" /></svg>
+            بازی و مسیر
+          </button>
+          <button data-panel="appearance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /><path d="M12 3.6v3M12 17.4v3M3.6 12h3M17.4 12h3" /></svg>
+            ظاهر
+          </button>
+          <button data-panel="performance">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17a8 8 0 1 1 16 0" /><path d="m12 13 3.6-3" /><circle cx="12" cy="17" r="1.4" /></svg>
+            عملکرد
+          </button>
+          <button data-panel="about">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4" /><path d="M12 11v5.5" /><circle cx="12" cy="7.8" r="0.9" fill="currentColor" stroke="none" /></svg>
+            درباره
+          </button>
+        </nav>
+
+        <div>
+          <!-- general -->
+          <div class="spanel is-active" data-panel="general">
+            <div class="group">
+              <div class="group__head"><h4>پروفایل</h4><p>نامی که در سرورها با آن شناخته می‌شوی.</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">نام بازیکن (Nickname)</div><div class="row__hint">اگر خالی باشد، نام ذخیره‌شده در MTA استفاده می‌شود.</div></div>
+                  <div class="row__ctl"><input class="field" id="setNickname" maxlength="24" placeholder="Player" /></div>
+                </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group__head"><h4>رفتار لانچر</h4><p>انتخاب کن XMP چطور با بازی کار کند.</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">بستن لانچر بعد از اجرای بازی</div><div class="row__hint">حافظه آزاد می‌شود؛ روی سیستم‌های ضعیف توصیه می‌شود.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" data-pref="closeOnLaunch"></button></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">به‌روزرسانی خودکار لیست سرورها</div><div class="row__hint">هر ۹۰ ثانیه لیست تازه می‌شود.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" data-pref="autoUpdateServers"></button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- game -->
+          <div class="spanel" data-panel="game">
+            <div class="group">
+              <div class="group__head"><h4>کلاینت XMP</h4><p>موتور بازی مخصوص XMP؛ خودش دانلود و به‌روز می‌شود و نیازی به نصب جدا ندارد.</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">وضعیت کلاینت</div><div class="row__hint" id="clientStatusHint">در حال بررسی…</div></div>
+                  <div class="row__ctl"><span class="badge" id="clientStatusBadge">—</span></div>
+                </div>
+                <div class="row" id="clientProgressRow" hidden>
+                  <div class="row__txt" style="flex:1;min-width:0">
+                    <div class="row__title" id="clientProgressLabel">در حال دانلود…</div>
+                    <div class="cprogress"><i id="clientProgressBar"></i></div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">دانلود / به‌روزرسانی</div><div class="row__hint">از ریلیز رسمی XMP روی گیت‌هاب، با بررسی امضای SHA-256.</div></div>
+                  <div class="row__ctl" style="flex-direction:column;align-items:stretch">
+                    <button class="btn btn--primary btn--sm" id="btnClientInstall">دانلود و نصب کلاینت</button>
+                    <button class="btn btn--quiet btn--sm" id="btnClientCheck">بررسی به‌روزرسانی</button>
+                    <button class="btn btn--quiet btn--sm" id="btnClientRemove">حذف کلاینت</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group__head"><h4>GTA San Andreas</h4><p>فایل بازی را خودت داری؛ XMP فقط پیداش می‌کند و چیزی از بازی توزیع نمی‌شود.</p></div>
+              <div class="rows">
+                <div class="row" style="align-items:flex-start">
+                  <div class="row__txt" style="min-width:0">
+                    <div class="row__title" style="margin-bottom:6px">مسیر پوشه GTA SA</div>
+                    <div class="pathbox"><span id="gtaPathLabel">پیدا نشد</span></div>
+                  </div>
+                  <div class="row__ctl" style="flex-direction:column;align-items:stretch">
+                    <button class="btn btn--ghost btn--sm" id="btnDetectGta">شناسایی خودکار</button>
+                    <button class="btn btn--quiet btn--sm" id="btnBrowseGta">انتخاب پوشه</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">وضعیت بازی</div><div class="row__hint" id="gtaStatusHint">در حال بررسی…</div></div>
+                  <div class="row__ctl"><span class="badge" id="gtaStatusBadge">—</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group__head"><h4>محل نصب Multi Theft Auto <span class="badge">سازگاری عقب‌رو</span></h4><p>اگر MTA داری، تا وقتی کلاینت XMP نصب نشده از همان استفاده می‌شود.</p></div>
+              <div class="rows">
+                <div class="row" style="align-items:flex-start">
+                  <div class="row__txt" style="min-width:0">
+                    <div class="row__title" style="margin-bottom:6px">مسیر پوشه بازی</div>
+                    <div class="pathbox"><span id="mtaPathLabel">پیدا نشد</span></div>
+                  </div>
+                  <div class="row__ctl" style="flex-direction:column;align-items:stretch">
+                    <button class="btn btn--ghost btn--sm" id="btnDetect">شناسایی خودکار</button>
+                    <button class="btn btn--quiet btn--sm" id="btnBrowse">انتخاب پوشه</button>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">وضعیت</div><div class="row__hint" id="mtaStatusHint">در حال بررسی…</div></div>
+                  <div class="row__ctl"><span class="badge" id="mtaStatusBadge">—</span></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">باز کردن پوشه بازی</div><div class="row__hint">برای دسترسی سریع به ماد‌ها و تنظیمات.</div></div>
+                  <div class="row__ctl"><button class="btn btn--ghost btn--sm" id="btnOpenFolder">باز کن</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- appearance -->
+          <div class="spanel" data-panel="appearance">
+            <div class="group">
+              <div class="group__head"><h4>رنگ برند</h4><p>حس‌وحال لانچر را عوض کن.</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">Accent</div><div class="row__hint">در همه بخش‌ها اعمال می‌شود.</div></div>
+                  <div class="row__ctl">
+                    <div class="swatches">
+                      <button class="swatch" data-accent="ember" aria-pressed="true" aria-label="Ember"></button>
+                      <button class="swatch" data-accent="violet" aria-pressed="false" aria-label="Violet"></button>
+                      <button class="swatch" data-accent="aurora" aria-pressed="false" aria-label="Aurora"></button>
+                      <button class="swatch" data-accent="lime" aria-pressed="false" aria-label="Lime"></button>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">زبان رابط</div><div class="row__hint">رابط به‌صورت بومی راست‌به‌چپ و فارسی است؛ نسخه چندزبانه در نقشه راه است.</div></div>
+                  <div class="row__ctl"><span class="badge badge--ember">فارسی · RTL</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- performance -->
+          <div class="spanel" data-panel="performance">
+            <div class="group">
+              <div class="group__head"><h4>بهینه‌سازی</h4><p>برای لپ‌تاپ‌ها و سیستم‌های بدون کارت گرافیک مجزا.</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">حالت کم‌مصرف (Low-End)</div><div class="row__hint">افکت‌های شیشه‌ای، درخشش و انیمیشن‌های سنگین را خاموش می‌کند.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" data-pref="lowEndMode"></button></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">کاهش انیمیشن</div><div class="row__hint">حرکت‌ها و ترنزیشن‌ها حداقل می‌شوند.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="false" data-pref="reduceMotion"></button></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">نمایش پینگ/وضعیت در نوار پایین</div><div class="row__hint">اطلاعات لحظه‌ای لیست سرورها.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" data-pref="showFps"></button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- about -->
+          <div class="spanel" data-panel="about">
+            <div class="group">
+              <div class="group__head"><h4>XMP Launcher</h4><p id="aboutVersion">نسخه ۱٫۰٫۰</p></div>
+              <div class="rows">
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">موتور</div><div class="row__hint" id="aboutEngine">Electron</div></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">سیستم</div><div class="row__hint" id="aboutSystem">—</div></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">بررسی به‌روزرسانی</div><div class="row__hint" id="updateHint">برای بررسی کلیک کن.</div></div>
+                  <div class="row__ctl"><button class="btn btn--ghost btn--sm" id="btnUpdate">بررسی</button></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">پروژه در GitHub</div><div class="row__hint">سورس، نسخه‌ها و گزارش باگ.</div></div>
+                  <div class="row__ctl"><button class="btn btn--ghost btn--sm" id="btnGithub">باز کن</button></div>
+                </div>
+              </div>
+            </div>
+            <div class="group">
+              <div class="group__head"><h4>درباره پروژه</h4></div>
+              <div style="padding:14px 18px;color:var(--muted);font-size:12px;line-height:1.9">
+                XMP یک لانچر مستقل و غیررسمی برای Multi Theft Auto: San Andreas است. هیچ بخشی از بازی یا کلاینت MTA همراه آن منتشر نمی‌شود؛
+                XMP فقط نسخه نصب‌شده روی سیستم تو را پیدا می‌کند و درخواست اتصال به سرور را به آن می‌دهد.
+                GTA: San Andreas علامت تجاری Take-Two Interactive است و این پروژه وابسته به Rockstar یا تیم MTA نیست.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- status bar -->
+  <footer class="statusbar">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">آماده</span>
+    <span class="sep"></span>
+    <span id="statusServers">— سرور</span>
+    <span class="statusbar__spacer"></span>
+    <span id="statusMemory"></span>
+    <span class="sep"></span>
+    <span>XMP <span id="statusVersion">1.0.0</span></span>
+  </footer>
+</div>
+
+<!-- ======================= drawer ======================= -->
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer__head">
+    <button class="drawer__close" id="drawerClose" aria-label="بستن">
+      <svg viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="m3 3 6 6M9 3l-6 6" /></svg>
+    </button>
+    <div class="drawer__title" id="drawerTitle">—</div>
+    <div class="drawer__sub" id="drawerTags"></div>
+  </div>
+  <div class="drawer__body" id="drawerBody"></div>
+  <div class="drawer__foot">
+    <button class="btn btn--primary" id="drawerJoin" style="width:100%">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6L19 12 8 5.2Z" /></svg>
+      <span>اتصال به سرور</span>
+    </button>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn--ghost btn--sm" id="drawerFav" style="flex:1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 3.8 2.6 5.3 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8L3.5 9.9l5.9-.8Z" /></svg>
+        <span>نشان‌کردن</span>
+      </button>
+      <button class="btn btn--ghost btn--sm" id="drawerPing" style="flex:1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+        <span>پینگ</span>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ======================= launch overlay ======================= -->
+<div class="overlay" id="launchOverlay">
+  <div class="launch">
+    <div class="launch__mark"><img src="assets/logo-256.png" alt="" /></div>
+    <h3 id="launchTitle">در حال اتصال…</h3>
+    <p id="launchSub">XMP در حال آماده‌سازی بازی است</p>
+    <div class="launch__bar"><i id="launchBar"></i></div>
+    <div class="launch__steps" id="launchSteps"></div>
+    <button class="btn btn--quiet btn--sm" id="launchCancel">لغو</button>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="data/demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

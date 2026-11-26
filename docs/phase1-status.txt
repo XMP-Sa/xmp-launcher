@@ -1,0 +1,11 @@
+xmp-blue (fork of multitheftauto/mtasa-blue @ 55e4f6d)
+branch: xmp/main
+commits:
+  3609eda XMP Phase 1: fork scaffolding, CI and branding defaults
+  5b2a2b7 docs(xmp): record patch 0001 verification results
+artifacts (local build): Bin/server/mta-server64 + x64/{core,deathmatch,xmll,net}.so
+smoke test: ASE -> EYE1 22003 "XMP Server" MTA:SA 1.7n 0/32
+
+update: patch 0002 applied (XMP Client.exe), premake validation OK,
+portable patch exported to xmp-launcher/docs/xmp-phase1.patch
+fork restored as full clone at /home/user/xmp-blue @ 6d27236

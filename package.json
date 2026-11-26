@@ -1,0 +1,77 @@
+{
+  "name": "xmp-launcher",
+  "productName": "XMP Launcher",
+  "version": "1.1.0",
+  "description": "XMP Launcher — a modern, lightweight launcher for Multi Theft Auto: San Andreas.",
+  "author": {
+    "name": "XMP Studio"
+  },
+  "license": "MIT",
+  "private": false,
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "dist:win": "bash scripts/build-win.sh",
+    "dist:dir": "electron-builder --win --dir",
+    "icons": "python3 scripts/make-icons.py",
+    "snapshot": "node scripts/snapshot-servers.mjs"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.xmp.launcher",
+    "productName": "XMP Launcher",
+    "copyright": "Copyright © 2026 XMP Studio",
+    "asar": true,
+    "compression": "maximum",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "!**/*.map",
+      "!**/node_modules/**/*"
+    ],
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "XMP-Launcher-Setup-${version}.${ext}",
+      "publisherName": "XMP Studio",
+      "legalTrademarks": "XMP Launcher"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "XMP Launcher",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "license": "build/LICENSE.txt",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "differentialPackage": false
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16"
+  }
+}

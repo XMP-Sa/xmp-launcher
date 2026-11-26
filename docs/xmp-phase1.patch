@@ -1,0 +1,489 @@
+diff --git a/.github/workflows/xmp-build.yml b/.github/workflows/xmp-build.yml
+new file mode 100644
+index 0000000..9d48637
+--- /dev/null
++++ b/.github/workflows/xmp-build.yml
+@@ -0,0 +1,83 @@
++name: XMP Build
++
++# XMP fork build pipeline (Phase 1).
++# Based on the upstream build.yaml, trimmed to the two artifacts XMP ships:
++#   - XMP Client for Windows (Win32/x86 — GTA SA is a 32-bit process)
++#   - XMP Server for Linux x64
++# Upstream's own build.yaml is left untouched so upstream merges stay cheap.
++
++on:
++  push:
++    branches: [xmp/main]
++    tags: ['xmp-v*']
++  workflow_dispatch:
++
++permissions:
++  contents: read
++
++jobs:
++  client-windows:
++    name: XMP Client (windows, win32)
++    runs-on: windows-2025-vs2026
++    steps:
++      - uses: actions/checkout@v6
++
++      - uses: actions/cache@v5
++        id: cache-dxfiles
++        with:
++          path: utils/DXFiles
++          key: dxfiles-0001
++
++      - name: Download DirectX SDK files
++        if: steps.cache-dxfiles.outputs.cache-hit != 'true'
++        run: Invoke-WebRequest https://mirror-cdn.multitheftauto.com/bdata/DXFiles.zip -OutFile utils/DXFiles.zip
++        shell: powershell
++
++      - name: Extract DirectX SDK files
++        if: steps.cache-dxfiles.outputs.cache-hit != 'true'
++        run: Expand-Archive -Path utils/DXFiles.zip -DestinationPath utils/DXFiles
++        shell: powershell
++
++      - name: Install CEF
++        run: utils\premake5 install_cef
++
++      - name: Install data files
++        run: utils\premake5 install_data
++
++      - name: Build client (release, win32)
++        run: win-build.bat release win32
++        shell: cmd
++        env:
++          DXSDK_DIR: './utils/DXFiles/'
++          CI: 'true'
++
++      - name: Compose install files
++        run: utils\premake5 compose_files
++
++      - name: Upload XMP Client artifact
++        uses: actions/upload-artifact@v6
++        with:
++          name: XMP-Client-win32
++          path: InstallFiles/
++          if-no-files-found: error
++
++  server-linux:
++    name: XMP Server (linux, x64)
++    runs-on: ubuntu-latest
++    container:
++      image: docker://ghcr.io/multitheftauto/mtasa-blue-build:latest
++    steps:
++      - uses: actions/checkout@v6
++
++      - name: Build server (release, x64)
++        run: ./linux-build.sh --arch=x64 --config=release
++
++      - name: Install server data files
++        run: ./linux-install-data.sh
++
++      - name: Upload XMP Server artifact
++        uses: actions/upload-artifact@v6
++        with:
++          name: XMP-Server-linux-x64
++          path: Bin/server/
++          if-no-files-found: error
+diff --git a/Client/launch/Main.cpp b/Client/launch/Main.cpp
+index 71f2e22..02356b8 100644
+--- a/Client/launch/Main.cpp
++++ b/Client/launch/Main.cpp
+@@ -328,7 +328,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
+     auto com_cleanup = make_scope_exit([]() noexcept { CoUninitialize(); });
+ 
+     // Set taskbar grouping
+-    [[maybe_unused]] HRESULT hr = SetCurrentProcessExplicitAppUserModelID(L"Multi Theft Auto " MTA_STR(MTASA_VERSION_MAJOR) L"." MTA_STR(MTASA_VERSION_MINOR));
++    [[maybe_unused]] HRESULT hr = SetCurrentProcessExplicitAppUserModelID(L"XMP Client " MTA_STR(MTASA_VERSION_MAJOR) L"." MTA_STR(MTASA_VERSION_MINOR));
+ 
+     // Path discovery
+     SString launch_path = GetLaunchPath();
+diff --git a/Client/launch/NEU/Multi Theft Auto.gdf.xml b/Client/launch/NEU/XMP Client.gdf.xml
+similarity index 91%
+rename from Client/launch/NEU/Multi Theft Auto.gdf.xml
+rename to Client/launch/NEU/XMP Client.gdf.xml
+index 7f8cfea..7f13653 100644
+--- a/Client/launch/NEU/Multi Theft Auto.gdf.xml	
++++ b/Client/launch/NEU/XMP Client.gdf.xml	
+@@ -1,8 +1,8 @@
+ <?xml version="1.0" encoding="utf-16"?>
+ <GameDefinitionFile xmlns:baseTypes="urn:schemas-microsoft-com:GamesExplorerBaseTypes.v1" xmlns="urn:schemas-microsoft-com:GameDescription.v1">
+     <GameDefinition gameID="{8A7FC5C7-0023-4CD7-B1D6-89073CFD838F}">
+-        <Name>Multi Theft Auto</Name>
+-        <Description>Play San Andreas with an all new Multiplayer twist! Multi Theft Auto is an open-source game engine that adds full multi-player network play functionality to Rockstar North's Grand Theft Auto game series, in which this functionality is not originally found.</Description>
++        <Name>XMP Client</Name>
++        <Description>Play San Andreas online. XMP is an independent multiplayer platform based on the open-source Multi Theft Auto engine (GPLv3). Not affiliated with the MTA team or Rockstar.</Description>
+         <ReleaseDate>2003-02-09</ReleaseDate>
+         <Genres>
+             <Genre>Action</Genre>
+diff --git a/Client/launch/Multi Theft Auto.h b/Client/launch/XMP Client.h
+similarity index 100%
+rename from Client/launch/Multi Theft Auto.h
+rename to Client/launch/XMP Client.h
+diff --git a/Client/launch/Multi Theft Auto.manifest b/Client/launch/XMP Client.manifest
+similarity index 97%
+rename from Client/launch/Multi Theft Auto.manifest
+rename to Client/launch/XMP Client.manifest
+index a08b225..1cfb626 100644
+--- a/Client/launch/Multi Theft Auto.manifest	
++++ b/Client/launch/XMP Client.manifest	
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1" xmlns:v3="urn:schemas-microsoft-com:asm.v3">
+-    <assemblyIdentity type="win32" version="1.7.0.0" processorArchitecture="*" name="Multi Theft Auto" />
++    <assemblyIdentity type="win32" version="1.7.0.0" processorArchitecture="*" name="XMP Client" />
+ 
+     <v3:application>
+         <windowsSettings>
+diff --git a/Client/launch/Multi Theft Auto.rc b/Client/launch/XMP Client.rc
+similarity index 91%
+rename from Client/launch/Multi Theft Auto.rc
+rename to Client/launch/XMP Client.rc
+index 37373a8..54d191a 100644
+--- a/Client/launch/Multi Theft Auto.rc	
++++ b/Client/launch/XMP Client.rc	
+@@ -1,6 +1,6 @@
+ /////////////////////////////////////////////////////////////////////////////
+ //  Resource File for : Multi Theft Auto
+-#include "Multi Theft Auto.h"
++#include "XMP Client.h"
+ 
+ // The following line is a workaround for a redefinition warning in sal.h
+ // when using Visual Studio 2005 compilers and includes.  Comment out the
+@@ -28,7 +28,7 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+ #pragma code_page(DEFAULT)
+ #endif //_WIN32
+ 
+-ID_GDF_XML           DATA     "NEU\\Multi Theft Auto.gdf.xml"
++ID_GDF_XML           DATA     "NEU\\XMP Client.gdf.xml"
+ ID_ICON              ICON     "NEU\\gameicon_NEU.ico"
+ 
+ #endif    // Neutral resources
+diff --git a/Client/launch/launch.rc b/Client/launch/launch.rc
+index 22b61b4..3b2d7fb 100644
+--- a/Client/launch/launch.rc
++++ b/Client/launch/launch.rc
+@@ -87,11 +87,11 @@ BEGIN
+     BEGIN
+         BLOCK "080904b0"
+         BEGIN
+-            VALUE "CompanyName", "Multi Theft Auto"
+-            VALUE "FileDescription", "Multi Theft Auto Launcher"
++            VALUE "CompanyName", "XMP"
++            VALUE "FileDescription", "XMP Client Launcher"
+             VALUE "FileVersion", "1.7.0.0"
+             VALUE "LegalCopyright", "(C) 2003 - 2025 Multi Theft Auto"
+-            VALUE "ProductName", "MTA San Andreas"
++            VALUE "ProductName", "XMP Client"
+             VALUE "ProductVersion", "1.7.0.0"
+         END
+     END
+diff --git a/Client/launch/premake5.lua b/Client/launch/premake5.lua
+index 547e999..a3f239d 100644
+--- a/Client/launch/premake5.lua
++++ b/Client/launch/premake5.lua
+@@ -1,7 +1,7 @@
+ project "Client Launcher"
+ 	language "C++"
+ 	kind "WindowedApp"
+-	targetname "Multi Theft Auto"
++	targetname "XMP Client"
+ 	targetdir(buildpath("."))
+ 	debugdir(buildpath("."))
+ 	clangtidy "On"
+@@ -33,10 +33,10 @@ project "Client Launcher"
+ 		staticruntime "On"
+ 		files {
+ 			"NEU/gameicon_NEU.ico",
+-			"NEU/Multi Theft Auto.gdf.xml",
++			"NEU/XMP Client.gdf.xml",
+ 			"launch.rc",
+-			"Multi Theft Auto.rc",
+-			"Multi Theft Auto.manifest",
++			"XMP Client.rc",
++			"XMP Client.manifest",
+ 			"resource/mtaicon.ico"
+ 		}
+ 
+diff --git a/Client/loader-proxy/main.cpp b/Client/loader-proxy/main.cpp
+index ea1c283..7787631 100644
+--- a/Client/loader-proxy/main.cpp
++++ b/Client/loader-proxy/main.cpp
+@@ -29,11 +29,11 @@ constexpr std::wstring_view STEAM_GTA_EXE_NAME = L"gta-sa.exe";
+ constexpr std::wstring_view EXPLORER_EXE_NAME = L"explorer.exe";
+ 
+ #ifdef MTA_DEBUG
+-constexpr std::wstring_view MTA_EXE_NAME = L"Multi Theft Auto_d.exe";
++constexpr std::wstring_view MTA_EXE_NAME = L"XMP Client_d.exe";
+ constexpr std::wstring_view CORE_DLL_NAME = L"core_d.dll";
+ constexpr std::wstring_view NETC_DLL_NAME = L"netc_d.dll";
+ #else
+-constexpr std::wstring_view MTA_EXE_NAME = L"Multi Theft Auto.exe";
++constexpr std::wstring_view MTA_EXE_NAME = L"XMP Client.exe";
+ constexpr std::wstring_view CORE_DLL_NAME = L"core.dll";
+ constexpr std::wstring_view NETC_DLL_NAME = L"netc.dll";
+ #endif
+diff --git a/Client/loader/CInstallManager.cpp b/Client/loader/CInstallManager.cpp
+index c98fb77..632b75a 100644
+--- a/Client/loader/CInstallManager.cpp
++++ b/Client/loader/CInstallManager.cpp
+@@ -265,7 +265,7 @@ void CInstallManager::InitSequencer()
+         //
+         // Flow when game crashes:
+         // 1. core.dll crash handler saves crash info to settings
+-        // 2. core.dll launches "Multi Theft Auto.exe install_stage=crashed" (bypasses mutex)
++        // 2. core.dll launches "XMP Client.exe install_stage=crashed" (bypasses mutex)
+         // 3. New launcher lands HERE at "crashed:" label
+         // 4. Shows dialog with crash info from settings
+         // 5. User chooses restart or quit
+@@ -1081,7 +1081,7 @@ SString CInstallManager::_CheckOnRestartCommand()
+ //////////////////////////////////////////////////////////
+ SString CInstallManager::_MaybeSwitchToTempExe()
+ {
+-    // If a new "Multi Theft Auto.exe" exists, let that complete the install
++    // If a new "XMP Client.exe" exists, let that complete the install
+     if (m_pSequencer->GetVariable(INSTALL_LOCATION) == "far")
+     {
+         // Carry the current real install root forward to the temp launcher so it can set a base-dir
+@@ -1114,7 +1114,7 @@ SString CInstallManager::_SwitchBackFromTempExe()
+ 
+         // GetInstallPathForLauncher returns empty when running from a temp update directory and no
+         // usable non-temp install root could be resolved. PathJoin would then produce a root-relative
+-        // probe like "\Multi Theft Auto.exe", which could match an unrelated file on the current drive
++        // probe like "\XMP Client.exe", which could match an unrelated file on the current drive
+         // and cause us to launch the wrong executable. Skip straight to the GetMTASAPath() fallback.
+         const SString strRealInstallRoot = GetInstallPathForLauncher();
+         SString       strLauncherPathFilename = strRealInstallRoot.empty() ? SString() : PathJoin(strRealInstallRoot, MTA_EXE_NAME);
+diff --git a/Client/loader/Install.cpp b/Client/loader/Install.cpp
+index deeeb7e..93693dd 100644
+--- a/Client/loader/Install.cpp
++++ b/Client/loader/Install.cpp
+@@ -1011,7 +1011,7 @@ SString CheckOnRestartCommand()
+ 
+             deleteSourceRoot.Release();
+ 
+-            // If a new "Multi Theft Auto.exe" exists, let that complete the install
++            // If a new "XMP Client.exe" exists, let that complete the install
+             if (FileExists(MTA_EXE_NAME_RELEASE))
+                 return "install from far " + strOperation + " " + strParameters;
+ 
+diff --git a/Client/loader/Main.h b/Client/loader/Main.h
+index 56ad748..7bdd702 100644
+--- a/Client/loader/Main.h
++++ b/Client/loader/Main.h
+@@ -17,17 +17,17 @@
+ #define MTA_GTA_KNOWN_FILE_NAME "models\\gta3.img"
+ #define MTA_GUID                "Global\\{4962AF5F-5D82-412D-9CCA-AB8BB9DBD353}"
+ #define URI_CONNECT             1
+-#define MTA_EXE_NAME_RELEASE    "Multi Theft Auto.exe"
++#define MTA_EXE_NAME_RELEASE    "XMP Client.exe"
+ 
+ #ifdef MTA_DEBUG
+-    #define MTA_EXE_NAME          "Multi Theft Auto_d.exe"
++    #define MTA_EXE_NAME          "XMP Client_d.exe"
+     #define MTA_DLL_NAME          "core_d.dll"
+     #define CHECK_DM_LUA_NAME     "mods\\deathmatch\\lua5.1c_d.dll"
+     #define CHECK_DM_CLIENT_NAME  "mods\\deathmatch\\Client_d.dll"
+     #define LOADER_PROXY_DLL_NAME "mtasa_d.dll"
+     #define MAETRO32_DLL_NAME     "maetro32_d.dll"
+ #else
+-    #define MTA_EXE_NAME          "Multi Theft Auto.exe"
++    #define MTA_EXE_NAME          "XMP Client.exe"
+     #define MTA_DLL_NAME          "core.dll"
+     #define CHECK_DM_LUA_NAME     "mods\\deathmatch\\lua5.1c.dll"
+     #define CHECK_DM_CLIENT_NAME  "mods\\deathmatch\\Client.dll"
+diff --git a/Client/loader/MainFunctions.cpp b/Client/loader/MainFunctions.cpp
+index dd911f2..bf4b7ea 100644
+--- a/Client/loader/MainFunctions.cpp
++++ b/Client/loader/MainFunctions.cpp
+@@ -861,11 +861,11 @@ void ConfigureWerDumpPath()
+     }
+ 
+     // WerRegisterAppLocalDump only affects current process and doesn't work for desktop apps anyway.
+-    // Always use registry fallback for gta_sa.exe (child process), and for Multi Theft Auto.exe
++    // Always use registry fallback for gta_sa.exe (child process), and for XMP Client.exe
+     // if WerRegisterAppLocalDump failed.
+     // Note: WER LocalDumps only reads from HKLM, not HKCU (per Microsoft documentation).
+     // Without admin privileges, we cannot update HKLM and stale entries from previous installs may persist.
+-    const wchar_t* exeNames[] = {L"gta_sa.exe", loaderConfigured ? nullptr : L"Multi Theft Auto.exe"};
++    const wchar_t* exeNames[] = {L"gta_sa.exe", loaderConfigured ? nullptr : L"XMP Client.exe"};
+ 
+     for (const wchar_t* exeName : exeNames)
+     {
+@@ -1185,7 +1185,7 @@ void HandleDuplicateLaunching()
+                 const SString strMessage =
+                     _("Trouble restarting MTA:SA\n\n"
+                       "If the problem persists, open Task Manager and\n"
+-                      "stop the 'gta_sa.exe' and 'Multi Theft Auto.exe' processes\n\n\n"
++                      "stop the 'gta_sa.exe' and 'XMP Client.exe' processes\n\n\n"
+                       "Try to launch MTA:SA again?");
+ 
+                 if (MessageBoxUTF8(0, strMessage, _("Error") + _E("CL04"), MB_ICONWARNING | MB_YESNO | MB_TOPMOST) == IDYES)
+diff --git a/Server/mods/deathmatch/mtaserver.conf b/Server/mods/deathmatch/mtaserver.conf
+index f67f302..d80d218 100644
+--- a/Server/mods/deathmatch/mtaserver.conf
++++ b/Server/mods/deathmatch/mtaserver.conf
+@@ -2,7 +2,7 @@
+ 
+     <!-- This parameter specifies the name the server will be visible as in the ingame server browser
+          and on Game-Monitor. It is a required parameter. -->
+-    <servername>Default MTA Server</servername>
++    <servername>XMP Server</servername>
+ 
+     <!-- The rule parameters are optional settings that the server will make public for the server browser/list.
+          A brief description of the server. -->
+diff --git a/XMP.md b/XMP.md
+new file mode 100644
+index 0000000..2e2415f
+--- /dev/null
++++ b/XMP.md
+@@ -0,0 +1,58 @@
++# XMP — fork of mtasa-blue
++
++This repository is **XMP Blue**, a fork of [multitheftauto/mtasa-blue](https://github.com/multitheftauto/mtasa-blue)
++(the open-source Multi Theft Auto: San Andreas engine, GPLv3).
++
++XMP turns that engine into an independent, XMP-branded multiplayer platform:
++
++- **Phase 1 (current):** protocol-identical fork. XMP Client connects to existing
++  public MTA servers; XMP Server registers like any MTA server. Only branding and
++  defaults differ from upstream.
++- **Later phases:** the XMP Launcher manages this client (download/update/launch),
++  and XMP-operated servers join the same client. See `docs/xmp/ROADMAP.md` in the
++  `xmp-launcher` repository.
++
++## Rules of this fork
++
++1. **Never touch the net protocol or client identification in Phase 1.** Any change
++   there disconnects XMP from public MTA servers.
++2. **Keep every XMP change small, isolated and documented** in `docs/xmp/patches/`
++   so upstream merges stay cheap.
++3. **Upstream copyright and GPLv3 notices stay intact.** XMP is a modified version
++   of MTA and is marked as such, as GPLv3 requires.
++4. GTA San Andreas game files are **never** distributed. Users provide their own
++   legally obtained copy.
++
++## Branches
++
++| Branch | Purpose |
++|---|---|
++| `master` | Mirror of upstream `multitheftauto/mtasa-blue` — do not commit here |
++| `xmp/main` | XMP working branch (upstream merges land here) |
++
++## Upstream sync
++
++```bash
++git remote add upstream https://github.com/multitheftauto/mtasa-blue.git
++git fetch upstream
++git checkout xmp/main
++git merge upstream/master   # resolve, smoke-test, then release
++```
++
++Sync cadence: monthly, or on each stable upstream release.
++
++## Building
++
++Unchanged from upstream — see the upstream `README.md`:
++
++- **Windows client:** Visual Studio 2026 + DirectX SDK → `win-create-projects.bat`,
++  build `Build/MTASA.sln` (Release, Win32), then `win-install-data.bat`
++- **Linux server:** `./linux-build.sh --arch=x64 --config=release`
++
++CI: `.github/workflows/xmp-build.yml` produces `XMP-Client-win32` and
++`XMP-Server-linux-x64` artifacts on every push to `xmp/main`.
++
++## License
++
++GPLv3 — see `LICENSE`. This is a modified version of Multi Theft Auto;
++it is not affiliated with or endorsed by the MTA team or Rockstar.
+diff --git a/docs/xmp/patches/0001-branding-defaults.md b/docs/xmp/patches/0001-branding-defaults.md
+new file mode 100644
+index 0000000..95f7bda
+--- /dev/null
++++ b/docs/xmp/patches/0001-branding-defaults.md
+@@ -0,0 +1,33 @@
++# Patch 0001 — Branding defaults (Phase 1)
++
++**Date:** 2026-11-25
++**Scope:** data/config only — no C++ changes, no protocol impact
++**Upstream-sync risk:** minimal (single-line changes in data files)
++
++## Changes
++
++| File | Change | Why |
++|---|---|---|
++| `Server/mods/deathmatch/mtaserver.conf` | Default `<servername>` → `XMP Server` | A fresh XMP Server announces itself as XMP in the master list instead of "Default MTA Server" |
++
++## Explicitly NOT changed (yet)
++
++- Binary names (`Multi Theft Auto.exe`, `MTA Server.exe`) — renaming the client
++  launcher also means migrating the data directory name (`MTA San Andreas`),
++  registry keys and the XMP Launcher's executable detection in one coordinated
++  patch. Scheduled as patch 0002, after the first Windows smoke test.
++- Window titles / in-client UI strings — same reason; they ride along with 0002.
++- Net protocol version, serial/client identification, master-list endpoints —
++  **frozen** for all of Phase 1 (see `XMP.md`, rule 1).
++
++## Verification (2026-11-25, local sandbox build)
++
++- Linux server build passes: `make config=release_x64 Core Launcher Deathmatch XML`
++  → `Bin/server/mta-server64` + `x64/{core,deathmatch,xmll}.so` (exit 0).
++  Note: the optional `dbconmy` module needs Oracle MySQL 8 headers (upstream's
++  docker image has them; Debian/MariaDB headers do not), so it is excluded from
++  the local sandbox build only. CI uses the official docker image and builds all.
++- Server booted with the default config and answered an ASE query on
++  `22003+123` exactly like an MTA server:
++  `EYE1 · port 22003 · name "XMP Server" · MTA:SA · 1.7n · 0/32`
++  → the existing XMP Launcher ping code sees XMP servers with zero changes.
+diff --git a/docs/xmp/patches/0002-client-executable-branding.md b/docs/xmp/patches/0002-client-executable-branding.md
+new file mode 100644
+index 0000000..26b619d
+--- /dev/null
++++ b/docs/xmp/patches/0002-client-executable-branding.md
+@@ -0,0 +1,44 @@
++# Patch 0002 — Client executable branding (Phase 1)
++
++**Date:** 2026-11-25
++**Scope:** client launcher identity only — no protocol, no data-layout changes
++**Upstream-sync risk:** low (one premake file, two loader units, resource files)
++
++## What changed
++
++The client launcher executable is now **XMP Client.exe**:
++
++| File | Change |
++|---|---|
++| `Client/launch/premake5.lua` | `targetname` → `XMP Client`; resource file names updated |
++| `Client/launch/Multi Theft Auto.rc/.h/.manifest`, `NEU/Multi Theft Auto.gdf.xml` | Renamed to `XMP Client.*`; GDF display name/description now XMP (upstream gameID kept) |
++| `Client/launch/launch.rc` | Version info: CompanyName `XMP`, ProductName `XMP Client`, FileDescription `XMP Client Launcher`. **LegalCopyright left untouched** (upstream attribution, GPLv3/trademark hygiene) |
++| `Client/launch/Main.cpp` | AppUserModelID → `XMP Client …` (taskbar identity) |
++| `Client/launch/XMP Client.manifest` | assemblyIdentity name → `XMP Client` |
++| `Client/loader/Main.h` | `MTA_EXE_NAME(_RELEASE)` → `XMP Client.exe` (`_d` in debug) |
++| `Client/loader-proxy/main.cpp` | `MTA_EXE_NAME` constant → `XMP Client.exe` |
++| `Client/loader/MainFunctions.cpp`, `CInstallManager.cpp`, `Install.cpp` | Hardcoded exe name in WER fallback + user-facing strings/comments updated |
++
++Every code reference to the launcher exe name flows through these defines,
++so the rename is consistent across the loader, proxy and install manager.
++
++## Explicitly NOT changed (deliberate)
++
++- **Data directories** (`MTA San Andreas` under AppData/ProgramData) and registry
++  keys — renaming them is a user-data migration; it ships as patch 0003 together
++  with the XMP Launcher's client manager, which can migrate existing installs.
++- **DLL names** (`core.dll`, `mtasa.dll`, …) — internal, invisible to users.
++- **Mutex GUID, net protocol, serial/client identification** — frozen (fork rule 1).
++- **Server binary names** (`mta-server64` / `MTA Server.exe`) — hosting tooling
++  expects them; server rename is evaluated separately in Phase 3.
++- Upstream NSIS installer (`Shared/installer/`) — XMP ships through the XMP
++  Launcher instead; the NSIS scripts stay as upstream reference.
++
++## Verification
++
++- `./utils/premake5 gmake` on the patched tree: **exit 0**, all projects
++  generated (validates the premake edit + renamed resource files).
++- Full compile of the client requires Windows + VS2026 → CI job
++  `client-windows` in `.github/workflows/xmp-build.yml` (first run after the
++  fork is pushed to GitHub). The Windows smoke test (connect to 3 public
++  servers) remains the Phase 1 acceptance gate.

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="504" height="140" viewBox="0 0 504 140">
+  <defs><linearGradient id="e" x1="0" y1="0" x2="504" y2="140" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#FFB259"/><stop offset="0.5" stop-color="#FF7A2F"/>
+    <stop offset="1" stop-color="#D92540"/></linearGradient></defs>
+  <text x="0" y="104" font-family="Sora, DejaVu Sans, sans-serif" font-weight="800"
+        font-size="118" letter-spacing="12" fill="#F2F4F8">XMP</text>
+  <text x="298" y="104" font-family="Sora, DejaVu Sans, sans-serif" font-weight="500"
+        font-size="34" letter-spacing="7" fill="#8A94A6">LAUNCHER</text>
+</svg>

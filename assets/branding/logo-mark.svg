@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs>
+    <linearGradient id="body" x1="96" y1="80" x2="928" y2="944" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#232C3D"/><stop offset="0.46" stop-color="#121822"/>
+      <stop offset="1" stop-color="#070A10"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="120" y1="120" x2="904" y2="904" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B7C0D2" stop-opacity="0.55"/>
+      <stop offset="0.32" stop-color="#2A3140" stop-opacity="0.35"/>
+      <stop offset="0.68" stop-color="#3B4455" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#8F9AB0" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="ember" x1="250" y1="230" x2="790" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFB259"/><stop offset="0.34" stop-color="#FF7A2F"/>
+      <stop offset="0.72" stop-color="#F8412F"/><stop offset="1" stop-color="#A91238"/>
+    </linearGradient>
+    <linearGradient id="emberFlat" x1="250" y1="230" x2="790" y2="790" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF9C45"/><stop offset="1" stop-color="#D92540"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="180" y1="90" x2="680" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="512" cy="520" r="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FF6A2C" stop-opacity="0.22"/>
+      <stop offset="0.6" stop-color="#FF3B2F" stop-opacity="0.07"/>
+      <stop offset="1" stop-color="#FF3B2F" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="lift" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="soften" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    </defs>
+<rect width="1024" height="1024" fill="url(#halo)"/>
+<rect x="86.02" y="86.02" width="851.97" height="851.97" rx="196.00" fill="url(#body)" filter="url(#lift)"/><rect x="86.02" y="86.02" width="851.97" height="851.97" rx="196.00" fill="url(#gloss)"/><rect x="89.02" y="89.02" width="845.97" height="845.97" rx="193.00" fill="none" stroke="url(#rim)" stroke-width="3.40"/>
+<g filter="url(#soften)" opacity="0.62"><path d="M260 622 L764 230 L764 390 L260 782 Z" fill="#FF6A2C"/><path d="M764 622 L260 230 L260 390 L764 782 Z" fill="#FF4D2D"/></g>
+<path d="M260 622 L764 230 L764 390 L260 782 Z" fill="url(#ember)"/>
+<path d="M764 622 L260 230 L260 390 L764 782 Z" fill="url(#emberFlat)"/>
+<path d="M512 500 L624 371 L668 420 L556 549 Z" fill="#240910" opacity="0.20"/>
+<path d="M512 500 L400 629 L356 580 L468 451 Z" fill="#FFFFFF" opacity="0.05"/>
+<text x="512" y="872" text-anchor="middle" font-family="Sora, DejaVu Sans, sans-serif" font-weight="800" font-size="132" letter-spacing="14" fill="#F2F4F8">XMP</text><rect x="356" y="906" width="312" height="7" rx="3.5" fill="url(#ember)"/>
+</svg>
