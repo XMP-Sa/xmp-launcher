@@ -16,6 +16,7 @@
     <div class="boot__word">XMP</div>
     <div class="boot__bar"><i id="bootBar"></i></div>
     <div class="boot__hint" id="bootHint">در حال آماده‌سازی لانچر…</div>
+    <div class="boot__progress" id="bootProgressRow" hidden><i id="bootProgressBar"></i></div>
   </div>
 </div>
 
@@ -150,6 +151,15 @@
         </div>
       </div>
 
+      <div id="officialSection" hidden>
+        <div class="section-head">
+          <h3>سرورهای رسمی XMP</h3>
+          <div class="rule"></div>
+          <span class="badge badge--ember">XMP</span>
+        </div>
+        <div class="cards" id="officialCards"></div>
+      </div>
+
       <div class="section-head">
         <h3>سرورهای پرطرفدار</h3>
         <div class="rule"></div>
@@ -175,6 +185,7 @@
     <section class="page" data-page="servers">
       <div class="toolbar">
         <button class="chip is-active" data-filter="all">همه</button>
+        <button class="chip" data-filter="xmp">سرورهای XMP</button>
         <button class="chip" data-filter="room">جای خالی</button>
         <button class="chip" data-filter="open">بدون رمز</button>
         <button class="chip" data-filter="fav">علاقه‌مندی‌ها</button>
@@ -258,6 +269,14 @@
                   <div class="row__txt"><div class="row__title">به‌روزرسانی خودکار لیست سرورها</div><div class="row__hint">هر ۹۰ ثانیه لیست تازه می‌شود.</div></div>
                   <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" data-pref="autoUpdateServers"></button></div>
                 </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">به‌روزرسانی خودکار لانچر</div><div class="row__hint">هنگام باز شدن لانچر به‌روزرسانی بررسی و بی‌صدا نصب می‌شود.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" data-pref="autoUpdateLauncher"></button></div>
+                </div>
+                <div class="row">
+                  <div class="row__txt"><div class="row__title">به‌روزرسانی خودکار کلاینت XMP</div><div class="row__hint">کلاینت XMP جزئی از لانچر است؛ هنگام شروع به‌روز می‌شود تا همیشه برای بازی آماده باشی.</div></div>
+                  <div class="row__ctl"><button class="switch" role="switch" aria-checked="true" data-pref="autoUpdateClient"></button></div>
+                </div>
               </div>
             </div>
           </div>
@@ -265,7 +284,7 @@
           <!-- game -->
           <div class="spanel" data-panel="game">
             <div class="group">
-              <div class="group__head"><h4>کلاینت XMP</h4><p>موتور بازی مخصوص XMP؛ خودش دانلود و به‌روز می‌شود و نیازی به نصب جدا ندارد.</p></div>
+              <div class="group__head"><h4>کلاینت XMP</h4><p>جزئی از همین لانچر است؛ هنگام باز شدن به‌صورت خودکار دانلود و به‌روز می‌شود. نیازی به نصب جداگانه نیست.</p></div>
               <div class="rows">
                 <div class="row">
                   <div class="row__txt"><div class="row__title">وضعیت کلاینت</div><div class="row__hint" id="clientStatusHint">در حال بررسی…</div></div>
@@ -400,9 +419,9 @@
             <div class="group">
               <div class="group__head"><h4>درباره پروژه</h4></div>
               <div style="padding:14px 18px;color:var(--muted);font-size:12px;line-height:1.9">
-                XMP یک لانچر مستقل و غیررسمی برای Multi Theft Auto: San Andreas است. هیچ بخشی از بازی یا کلاینت MTA همراه آن منتشر نمی‌شود؛
-                XMP فقط نسخه نصب‌شده روی سیستم تو را پیدا می‌کند و درخواست اتصال به سرور را به آن می‌دهد.
-                GTA: San Andreas علامت تجاری Take-Two Interactive است و این پروژه وابسته به Rockstar یا تیم MTA نیست.
+                XMP یک پلتفرم مستقل و متن‌باز برای تجربه چندنفره GTA San Andreas است. لانچر و کامپوننت بازی XMP
+                یک محصول یکپارچه‌اند و به‌صورت خودکار به‌روز می‌شوند؛ فایل‌های اصلی GTA San Andreas را خود کاربر تهیه می‌کند
+                و همراه XMP توزیع نمی‌شود. GTA: San Andreas علامت تجاری Take-Two Interactive است و XMP وابستگی رسمی به Rockstar ندارد.
               </div>
             </div>
           </div>

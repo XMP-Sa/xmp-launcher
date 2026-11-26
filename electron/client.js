@@ -211,4 +211,6 @@ module.exports = {
   checkUpdate,
   remove,
   fetchManifest,
+  downloadToFile,
+  sha256File,
 };

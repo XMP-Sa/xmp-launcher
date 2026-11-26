@@ -253,12 +253,12 @@
       badge.className = 'badge badge--ok';
       badge.textContent = `نصب‌شده ${c.version ? '· ' + c.version : ''}`;
       hint.textContent = 'XMP Client آماده اجراست؛ اتصال‌ها با کلاینت خود XMP انجام می‌شود.';
-      if (btn) btn.textContent = 'به‌روزرسانی کلاینت';
+      if (btn) btn.textContent = 'دانلود / به‌روزرسانی';
     } else {
       badge.className = 'badge badge--warn';
       badge.textContent = 'نصب نیست';
       hint.textContent = 'کلاینت دانلود نشده؛ تا آن موقع اگر موتور بازی روی سیستم باشد از همان استفاده می‌شود.';
-      if (btn) btn.textContent = 'دانلود و نصب کلاینت';
+      if (btn) btn.textContent = 'نصب کلاینت';
     }
   }
 
@@ -294,9 +294,22 @@
     done: 'نصب کامل شد.',
   };
 
+  let clientProgressWired = false;
   function wireClientProgress() {
-    if (!isElectron || !window.xmp.client.onProgress) return;
+    if (!isElectron || !window.xmp.client.onProgress || clientProgressWired) return;
+    clientProgressWired = true;
     window.xmp.client.onProgress((p) => {
+      const bootRow = $('#bootProgressRow');
+      const bootBar = $('#bootProgressBar');
+      if (bootRow && bootBar && !bootRow.hidden) {
+        const pct = p.stage === 'download'
+          ? Math.max(0, Math.min(100, p.percent || 0))
+          : p.stage === 'verify' ? 84 : p.stage === 'extract' ? 93 : p.stage === 'done' ? 100 : 4;
+        bootBar.style.width = `${pct}%`;
+        $('#bootHint').textContent = p.stage === 'download' && p.percent >= 0
+          ? `${STAGE_FA.download} ${Number(p.percent).toLocaleString('fa-IR')}٪`
+          : (STAGE_FA[p.stage] || 'در حال انجام…');
+      }
       const row = $('#clientProgressRow');
       const bar = $('#clientProgressBar');
       const label = $('#clientProgressLabel');
@@ -365,6 +378,7 @@
   }
 
   function matchesFilter(s) {
+    if (state.filter === 'xmp' && !s.official) return false;
     if (state.filter === 'room' && !(s.players < s.maxPlayers)) return false;
     if (state.filter === 'open' && s.passworded) return false;
     if (state.filter === 'fav' && !state.favorites.some((f) => f.ip === s.ip && f.port === s.port)) return false;
@@ -395,6 +409,7 @@
         <span class="badge ${s.passworded ? 'badge--warn' : 'badge--muted'}" style="height:19px;font-size:10px">
           ${s.passworded ? 'رمزدار' : 'آزاد'}
         </span>
+        ${s.official ? '<span class="badge badge--ember" style="height:19px;font-size:10px">XMP رسمی</span>' : ''}
         <span class="badge badge--muted" style="height:19px;font-size:10px">v${escapeHtml(s.version || '1.7')}</span>
       </div>
       <div class="scard__bar"><i style="width:${pct.toFixed(0)}%"></i></div>
@@ -419,6 +434,7 @@
         <div class="trow__title">
           <div class="trow__name">${escapeHtml(s.name)} ${isFav ? '<span style="color:var(--accent-1)">★</span>' : ''}</div>
           <div class="trow__sub">
+            ${s.official ? '<span class="badge badge--ember" style="height:17px;font-size:9.5px;padding:0 6px">XMP</span><span>·</span>' : ''}
             <span dir="ltr">${escapeHtml(s.ip)}:${escapeHtml(String(s.port))}</span>
             ${s.live?.gametype ? `<span>·</span><span>${escapeHtml(String(s.live.gametype).slice(0, 22))}</span>` : ''}
             ${s.passworded ? '<span>·</span><span>رمزدار</span>' : ''}
@@ -538,6 +554,13 @@
   }
 
   function renderTopCards() {
+    const officialHost = $('#officialCards');
+    const officialSection = $('#officialSection');
+    if (officialHost && officialSection) {
+      const official = state.servers.filter((s) => s.official);
+      officialSection.hidden = state.loading || !official.length;
+      if (!state.loading) officialHost.replaceChildren(...official.slice(0, 6).map(serverCard));
+    }
     const host = $('#topCards');
     if (state.loading) {
       host.replaceChildren(...Array.from({ length: 4 }, () => {
@@ -580,6 +603,7 @@
     const live = server.live || null;
 
     $('#drawerTags').innerHTML = `
+      ${server.official ? '<span class="badge badge--ember">سرور رسمی XMP</span>' : ''}
       <span class="badge ${server.passworded ? 'badge--warn' : 'badge--ok'}">${server.passworded ? 'رمزدار' : 'بدون رمز'}</span>
       <span class="badge badge--muted badge--mono">v${escapeHtml(server.version || '1.7')}</span>
       ${live && live.gametype ? `<span class="badge badge--muted">${escapeHtml(String(live.gametype).slice(0, 26))}</span>` : ''}
@@ -667,6 +691,17 @@
   }
 
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  const raceTimeout = async (promise, ms) => {
+    try {
+      return await Promise.race([
+        promise,
+        new Promise((resolve) => setTimeout(() => resolve(null), ms)),
+      ]);
+    } catch (_) {
+      return null;
+    }
+  };
 
   async function launchGame(server, { password } = {}) {
     state.lastLaunchCancelled = false;
@@ -859,6 +894,7 @@
         sw.setAttribute('aria-checked', String(next));
         await savePrefs({ [sw.dataset.pref]: next });
         if (sw.dataset.pref === 'autoUpdateServers' && next) startAutoRefresh();
+        if (sw.dataset.pref === 'autoUpdateClient') refreshClientStatus();
       });
     });
 
@@ -947,16 +983,29 @@
     // about
     $('#btnUpdate').addEventListener('click', async () => {
       const hint = $('#updateHint');
+      const btn = $('#btnUpdate');
       hint.textContent = 'در حال بررسی…';
       if (!isElectron) { hint.textContent = 'در حالت پیش‌نمایش بررسی نمی‌شود.'; return; }
       const res = await window.xmp.update.check();
       if (!res.ok) { hint.textContent = 'بررسی ناموفق بود (اتصال یا مخزن).'; return; }
-      hint.textContent = res.newer ? `نسخه جدید موجود است: ${res.tag}` : 'نسخه‌ات به‌روز است.';
-      if (res.newer) toast(`نسخه جدید ${res.tag} موجود است.`, 'ok');
+      if (!res.newer) { hint.textContent = 'نسخه‌ات به‌روز است.'; return; }
+      hint.textContent = `نسخه ${res.tag} در حال دانلود…`;
+      btn.disabled = true;
+      try {
+        const dl = await window.xmp.update.download();
+        if (!dl || !dl.ok || !dl.file) {
+          hint.textContent = 'دانلود به‌روزرسانی ناموفق بود.';
+          return;
+        }
+        hint.textContent = 'در حال نصب و اجرای نسخه جدید…';
+        const applied = await window.xmp.update.apply(dl.file);
+        if (!applied || !applied.ok) hint.textContent = 'نصب به‌روزرسانی شروع نشد.';
+      } finally {
+        btn.disabled = false;
+      }
     });
     $('#btnGithub').addEventListener('click', () => {
-      if (isElectron) window.xmp.app.open('https://github.com');
-      toast('آدرس مخزن پس از انتشار عمومی فعال می‌شود.', 'info');
+      if (isElectron) window.xmp.app.open('https://github.com/XMP-Sa/xmp-launcher');
     });
 
     // overlay cancel
@@ -1026,15 +1075,71 @@
       $('#aboutSystem').textContent = navigator.platform || '—';
     }
 
-    const hints = ['در حال آماده‌سازی لانچر…', 'بارگذاری رابط…', 'اتصال به مستر سرور…', 'آماده.'];
-    const bar = $('#bootBar');
-    for (let i = 0; i < hints.length; i += 1) {
-      $('#bootHint').textContent = hints[i];
-      bar.style.width = `${18 + i * 26}%`;
-      await wait(220);
-    }
+    // ------ boot preflight: the whole update flow lives here ------
+    // Discord / FiveM / VMP pattern: check everything, update what is
+    // outdated, and only then open the UI. The client is a component
+    // of the launcher, so its update is part of boot, not a separate
+    // "download the launcher" trip through the settings page.
+    const bootStep = (pct, hint) => {
+      $('#bootHint').textContent = hint;
+      $('#bootBar').style.width = `${pct}%`;
+    };
 
-    await Promise.all([loadServers(false), detectGame(true), detectGta(true), refreshClientStatus()]);
+    try {
+      bootStep(10, 'در حال بررسی به‌روزرسانی لانچر…');
+      const up = isElectron && window.xmp.update ? await raceTimeout(window.xmp.update.check(), 8000) : null;
+      if (up && up.newer && up.asset && state.prefs.autoUpdateLauncher) {
+        bootStep(16, `به‌روزرسانی لانچر (${fa(String(up.tag).replace('v', ''))}) در حال دانلود…`);
+        window.xmp.update.onProgress((p) => {
+          if (!p.total) {
+            bootStep(16, 'در حال دانلود به‌روزرسانی لانچر…');
+            return;
+          }
+          const ratio = Math.max(0, Math.min(1, p.received / p.total));
+          bootStep(16 + Math.round(ratio * 22), `در حال دانلود به‌روزرسانی لانچر… ${fa(Math.round(ratio * 100))}٪`);
+        });
+        const dl = await raceTimeout(window.xmp.update.download(), 15 * 60 * 1000);
+        if (dl && dl.ok && dl.file) {
+          bootStep(38, 'نصب به‌روزرسانی لانچر…');
+          await wait(350);
+          const applied = await window.xmp.update.apply(dl.file);
+          if (applied && applied.ok) {
+            bootStep(40, 'لانچر به‌روز شد — در حال اجرای نسخه جدید…');
+            return; // the installer relaunches the app
+          }
+        }
+      }
+
+      bootStep(42, 'در حال بررسی کامپوننت بازی XMP…');
+      if (isElectron) {
+        const chk = await raceTimeout(window.xmp.client.checkUpdate(), 10000);
+        if (chk && chk.ok && chk.updateAvailable && state.prefs.autoUpdateClient) {
+          const sizeMb = chk.size ? ` · ${fa(Math.max(1, Math.round(chk.size / 1048576)))} مگابایت` : '';
+          bootStep(48, chk.installed
+            ? `به‌روزرسانی کامپوننت بازی XMP (${fa(chk.latestVersion || '')})${sizeMb}…`
+            : `نصب کامپوننت بازی XMP (${fa(chk.latestVersion || '')})${sizeMb}…`);
+          $('#bootProgressRow').hidden = false;
+          $('#bootProgressBar').style.width = '0%';
+          wireClientProgress();
+          const res = await window.xmp.client.install();
+          $('#bootProgressRow').hidden = true;
+          if (!res.ok) toast('آماده‌سازی کامپوننت بازی ناموفق بود؛ از تنظیمات می‌توانی دوباره تلاش کنی.', 'bad');
+          else bootStep(64, 'کامپوننت بازی XMP آماده است.');
+        }
+      }
+
+      await raceTimeout(refreshClientStatus(), 6000);
+      bootStep(62, 'بررسی مسیر نصب بازی…');
+      await raceTimeout(detectGame(true), 6000);
+      await raceTimeout(detectGta(true), 6000);
+
+      bootStep(78, 'دریافت لیست سرورها…');
+      await raceTimeout(loadServers(false), 20000);
+      bootStep(96, 'آماده.');
+    } catch (_) {
+      // absolute fallback: the launcher must always reach the UI
+      await Promise.allSettled([loadServers(false), detectGame(true), detectGta(true), refreshClientStatus()]);
+    }
 
     renderAll();
     $('#boot').classList.add('gone');

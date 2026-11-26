@@ -42,5 +42,8 @@ contextBridge.exposeInMainWorld('xmp', {
   },
   update: {
     check: () => invoke('update:check'),
+    download: () => invoke('update:download'),
+    apply: (file) => invoke('update:apply', file),
+    onProgress: (cb) => ipcRenderer.on('update:progress', (e, data) => cb(data)),
   },
 });

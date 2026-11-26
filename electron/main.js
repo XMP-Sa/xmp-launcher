@@ -208,6 +208,47 @@ ipcMain.handle('servers:fetch', async () => {
     const sample = list.slice(0, 48);
     const pings = await pingServers(sample, { timeout: 1200, concurrency: 12 });
     const merged = list.map((s, i) => ({ ...s, live: pings[i] || null }));
+
+    // Phase 3: merge the official XMP server list (best effort).
+    try {
+      const xmpList = await config.fetchXmpServers();
+      const key = (x) => `${x.ip}:${x.port}`;
+      const known = new Map(merged.map((x) => [key(x), x]));
+      for (const entry of xmpList) {
+        const hit = known.get(key(entry));
+        if (hit) {
+          hit.official = true;
+          if (entry.name) hit.name = entry.name;
+        } else {
+          merged.unshift({
+            ...entry,
+            name: entry.name || 'XMP Server',
+            players: 0,
+            maxPlayers: 0,
+            version: '1.7',
+            passworded: false,
+            asePort: entry.port + 123,
+            official: true,
+            source: 'xmp',
+            live: null,
+          });
+        }
+      }
+      // live-check injected XMP entries right away
+      const injected = merged.filter((x) => x.source === 'xmp');
+      if (injected.length) {
+        const live = await pingServers(injected, { timeout: 1500, concurrency: 8 });
+        injected.forEach((x, i) => {
+          if (live[i]) {
+            x.live = live[i];
+            x.players = live[i].players ?? x.players;
+            x.maxPlayers = live[i].maxPlayers || x.maxPlayers;
+            if (live[i].name) x.name = live[i].name;
+            x.passworded = Boolean(live[i].passworded);
+          }
+        });
+      }
+    } catch (_) { /* XMP list is optional */ }
     const payload = { at: now, list: merged, count: merged.length, source: 'master' };
     prefs.set('serverCache', payload);
     lastMasterFetch = now;
@@ -344,6 +385,60 @@ ipcMain.handle('update:check', async () => {
   try {
     const info = await config.fetchReleaseInfo(pkg.version);
     return info;
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+});
+
+// ---------------------------------------------------------------------------
+// IPC: launcher self-update (Discord-style: download in boot, silent install)
+// ---------------------------------------------------------------------------
+let updateBusy = false;
+ipcMain.handle('update:download', async () => {
+  if (updateBusy) return { ok: false, error: 'BUSY' };
+  updateBusy = true;
+  try {
+    const info = await config.fetchReleaseInfo(pkg.version);
+    if (!info.ok || !info.newer || !info.asset?.browser_download_url) {
+      return { ok: false, error: 'NO_UPDATE', info };
+    }
+    const dest = path.join(app.getPath('temp'), `XMP-Launcher-Setup-${String(info.tag).replace(/^v/, '')}.exe`);
+    await clientManager.downloadToFile(info.asset.browser_download_url, dest, (p) => {
+      if (win && !win.isDestroyed()) win.webContents.send('update:progress', p);
+    });
+    const stat = fs.statSync(dest);
+    if (info.asset.size && stat.size !== info.asset.size) {
+      fs.rmSync(dest, { force: true });
+      return { ok: false, error: 'SIZE_MISMATCH' };
+    }
+    const digest = String(info.asset.digest || '');
+    if (digest.startsWith('sha256:')) {
+      const actual = await clientManager.sha256File(dest);
+      if (actual.toLowerCase() !== digest.slice('sha256:'.length).toLowerCase()) {
+        fs.rmSync(dest, { force: true });
+        return { ok: false, error: 'CHECKSUM_MISMATCH' };
+      }
+    }
+    return { ok: true, file: dest, version: info.tag, size: stat.size };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  } finally {
+    updateBusy = false;
+  }
+});
+
+ipcMain.handle('update:apply', (e, file) => {
+  const temp = path.resolve(app.getPath('temp'));
+  const resolved = typeof file === 'string' ? path.resolve(file) : '';
+  if (!resolved.startsWith(`${temp}${path.sep}`) || !/\.exe$/i.test(resolved) || !fs.existsSync(resolved)) {
+    return { ok: false, error: 'BAD_FILE' };
+  }
+  const fileToRun = resolved;
+  try {
+    const child = spawn(fileToRun, ['/S'], { detached: true, stdio: 'ignore' });
+    child.unref();
+    setTimeout(() => { isQuitting = true; app.quit(); }, 800);
+    return { ok: true };
   } catch (err) {
     return { ok: false, error: String(err.message || err) };
   }

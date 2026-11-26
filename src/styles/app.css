@@ -1204,6 +1204,9 @@ body[dir='rtl'] .switch[aria-checked='true']::after { translate: -18px 0; }
 .boot__word { font-family: 'Sora', sans-serif; font-size: 13px; letter-spacing: 0.42em; color: var(--text-2); padding-inline-start: 0.42em; }
 .boot__bar { width: 168px; height: 3px; border-radius: 99px; background: rgba(255, 255, 255, 0.09); overflow: hidden; }
 .boot__bar i { display: block; height: 100%; width: 8%; background: var(--grad); border-radius: inherit; transition: width 320ms var(--ease); }
+.boot__progress { width: 240px; height: 3px; border-radius: 99px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.boot__progress[hidden] { display: none; }
+.boot__progress i { display: block; height: 100%; width: 0; background: var(--grad); border-radius: inherit; transition: width 320ms var(--ease); }
 .boot__hint { font-size: 11px; color: var(--dim); letter-spacing: 0.02em; }
 
 /* ---- low end / reduced motion ----------------------------------------- */

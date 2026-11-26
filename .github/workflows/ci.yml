@@ -22,4 +22,5 @@ jobs:
           node --check electron/installer.js
           node --check electron/store.js
           node --check electron/config.js
+          node --check electron/client.js
           node --check src/app.js
